@@ -15,6 +15,7 @@ public class Communication implements Runnable {
     private DatagramPacket packet;
     private InetAddress address;
     private int port;
+    private boolean status;
 
     public Communication(InetAddress address, int port){
         try {
@@ -22,6 +23,7 @@ public class Communication implements Runnable {
             this.port = port;
             this.socket = new DatagramSocket();
             this.packet = new DatagramPacket(new byte[128], 128);
+            this.status = true;
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -33,32 +35,37 @@ public class Communication implements Runnable {
 
         System.out.println("Nouveau client : " + this.address + ":" + this.port);
 
-        data = (new String("Server RX302 ready")).getBytes();
+        data = (new String("serveur RX302 ready")).getBytes();
         this.packet = new DatagramPacket(data, data.length, this.address, this.port);
+        
         try {
+            
             this.socket.send(this.packet);
         } catch (IOException e) {
-            e.printStackTrace();
         }
+        
         data = new byte[data.length];
         this.packet = new DatagramPacket(data, data.length, this.address, this.port);
 
-        while(true){
+        while(status){
             try {
+                System.out.println("En attente d'un message.");
+                
                 data = new byte[data.length];
                 this.packet = new DatagramPacket(data, data.length, this.address, this.port);
                 this.socket.receive(this.packet);
 
+                System.out.println("Message de " + this.address + " : " + this.port);
+                
                 data = this.packet.getData();
                 this.socket.send(this.packet);
 
                 if (new String(data, 0, 4).equals("stop")){
                     System.out.println("Deconnection du client : " + this.address + ":" + this.port);
-                    return;
+                    this.status = false;
                 }
                 else System.out.println(new String(data));
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

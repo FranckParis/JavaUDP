@@ -34,6 +34,9 @@ public class Server {
         InetAddress address;
         int port;
         
+        System.out.println ("Serveur RX302 démarré.");
+        System.out.println ("En attente de connexion du client.");
+        
         while(true) {
             try {
                 this.ds.receive(this.dp);
@@ -52,7 +55,6 @@ public class Server {
                         }}).start();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

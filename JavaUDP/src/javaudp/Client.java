@@ -34,6 +34,9 @@ public class Client {
     }
 
     public void run(){
+        
+        System.out.println("Client RX302 démarré.");
+        
         Scanner reader = new Scanner(System.in);
         String text;
         
@@ -51,14 +54,16 @@ public class Client {
 
             this.ds.receive(this.dp);
 
-            if (new String(data, 0, 19).equals("Server RX302 ready")){
+            if (new String(data, 0, 19).equals("serveur RX302 ready")){
                 port = this.dp.getPort();
-                System.out.println(new String(data));
+                System.out.println(new String(data) + " - Connexion engagée");
             }
             
             // Running 
             
             while (status){
+                System.out.println("Entrer un message pour le serveur");
+                
                 if(reader.hasNextLine()){
                     text = reader.nextLine();
                     data = text.getBytes();
@@ -73,24 +78,22 @@ public class Client {
                     this.ds.receive(this.dp);
 
                     //Stop thread
-                    if(text.equals(new String("stop"))){
+                    if(text.equals("stop")){
                         if (new String(dataTemp).equals(new String(data))){
-                            System.out.println(new String("Deconnecte"));
-                        }
-                        this.status = false;
+                            System.out.println("Déconnecté du serveur.");
+                            this.status = false;
+                        }           
                     }
                     else {
                         if (new String(dataTemp).equals(new String(data))){
-                            System.out.println(new String("Message envoye au serveur"));
+                            System.out.println("Message envoyé au serveur.");
                         }
                     }
                 }
             }
 
         } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
