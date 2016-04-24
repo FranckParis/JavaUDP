@@ -3,115 +3,100 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package javaudp;
 
+
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author p1303175
+ * @author Francky
  */
 public class Client {
-     //Attributes
-    private DatagramSocket clientSocket;
-    private boolean status;
-    private int comPort;
-    
-    //Constructors
-    public Client (){
-        this.clientSocket = null;
-        this.status = true;
-        this.comPort = 125;
-    }
-    
-    //Methods
-    
-    public void initialise(){
+    DatagramSocket ds;
+    DatagramPacket dp;
+    int port;
+    boolean status;
+
+    public Client() {
         try {
-            this.clientSocket = new DatagramSocket();
-            System.out.println("Client RX302 v0.12");
-            
+            this.ds = new DatagramSocket();
+            this.port = 3142;
+            this.status = true;
         } catch (SocketException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Erreur lors de la création du socket");
         }
+
+        this.dp = new DatagramPacket(new byte[128], 128);
     }
-    
-    public void connect (){
-        System.out.println("Connexion au serveur en cours");
-        send("Connexion au serveur", comPort);
-        receive();
-    }
-    
+
     public void run(){
+        Scanner reader = new Scanner(System.in);
+        String text;
         
-        Scanner sc = new Scanner(System.in);
-        String s;
-        
-        connect();
-        
-        while(status){
-            System.out.println("Entrer un message à destination du serveur : ");
-            s = sc.nextLine();
-            send(s, comPort);
-            receive();
-        }     
-    }
-    
-    public void send (String s, int port){
+        byte[] data = (new String("hello serveur RX302")).getBytes();
+        byte[] host = { (byte)134, (byte)214, (byte)117, (byte)127};
+        byte[] dataTemp = data;
         
         try {
-        
-            //byte[] data
-            byte[] data;
-            data = s.getBytes("ascii");
+            //InetAddress ias = InetAddress.getByAddress(host);
+            InetAddress ias = InetAddress.getLocalHost();
+            this.dp = new DatagramPacket(data, data.length, ias, this.port);
+            this.ds.send(dp);
+            data = new byte[data.length];
+            this.dp = new DatagramPacket(data, data.length, ias, this.port);
+
+            this.ds.receive(this.dp);
+
+            if (new String(data, 0, 19).equals("Server RX302 ready")){
+                port = this.dp.getPort();
+                System.out.println(new String(data));
+            }
             
-            //DatagramPacket
-            InetAddress servAddress = InetAddress.getByName("localhost");
-            DatagramPacket dp = new DatagramPacket(data, data.length, servAddress,port);
+            // Running 
             
-            //send
-            clientSocket.send(dp);
-            
-            
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }   
-    }
-    
-    public void receive(){
-        //Datagram packet creation
-        DatagramPacket dp = new DatagramPacket(new byte[128], 128);
-        
-        //Reception
-        try {
-            System.out.println("En attente de réponse du serveur.");
-            clientSocket.receive(dp);
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        this.comPort = dp.getPort();
-        String receivedData;
-        
-        try {
-            receivedData = new String (dp.getData(), "ascii");
-            System.out.println(receivedData);
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            while (status){
+                if(reader.hasNextLine()){
+                    text = reader.nextLine();
+                    data = text.getBytes();
+                    dataTemp = data;
+                    
+                    this.dp = new DatagramPacket(data, data.length, ias, this.port);
+                    this.ds.send(dp);
+                    
+                    data = new byte[data.length];
+                    this.dp = new DatagramPacket(data, data.length, ias, this.port);
+                    
+                    this.ds.receive(this.dp);
+
+                    //Stop thread
+                    if(text.equals(new String("stop"))){
+                        if (new String(dataTemp).equals(new String(data))){
+                            System.out.println(new String("Deconnecte"));
+                        }
+                        this.status = false;
+                    }
+                    else {
+                        if (new String(dataTemp).equals(new String(data))){
+                            System.out.println(new String("Message envoye au serveur"));
+                        }
+                    }
+                }
+            }
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    public void stop(){
+        this.ds.close();
+    }
+
+
 }

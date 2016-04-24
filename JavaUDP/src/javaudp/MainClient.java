@@ -14,7 +14,7 @@ public class MainClient {
     
     public static void main(String[] args) {
         Client cli = new Client();
-        cli.initialise();
         cli.run();
+        cli.stop();
     }
 }

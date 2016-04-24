@@ -3,67 +3,63 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package javaudp;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
 /**
  *
- * @author p1303175
+ * @author Francky
  */
 public class Server {
-    
-    //Attributes
-    private int servPort;
-    private DatagramSocket servSocket;
-    private boolean status;
-    
-    //Constructors
-    public Server (int port){
-        this.servPort = port;
-        this.servSocket = null;
-        this.status = true;
-    }
-    
-    //Methods
-    
-    public void initialise(){
-        try {
-            this.servSocket = new DatagramSocket(servPort);
-        } catch (SocketException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void run (){
-        
-        System.out.println("Serveur RX302 v0.12");
-        System.out.println("En attente de réception.");
-        
-        
-        
-        //Reception
-        while(status){
-            //Datagram packet creation
-            DatagramPacket dp = new DatagramPacket(new byte[128], 128);
-            
-            try {
-                servSocket.receive(dp);
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    private DatagramSocket ds;
+    private DatagramPacket dp;
 
-            Communication com = new Communication(dp);
-            com.start();
-              
+    Server(int port) {
+        try {
+            this.ds = new DatagramSocket(port);
+        } catch (SocketException ex) {
+            System.out.println("error");
         }
-        
+
+        this.dp = new DatagramPacket(new byte[128], 128);
     }
+
+    public void run(){
+        byte[] data;
+        InetAddress address;
+        int port;
+        
+        while(true) {
+            try {
+                this.ds.receive(this.dp);
+
+                data = this.dp.getData();
+                address = this.dp.getAddress();
+                port = this.dp.getPort();
+                
+                
+                //Opening thread
+                if (new String(data, 0, 19).equals("hello serveur RX302")){
+                    Communication com = new Communication(address, port);
+                    (new Thread(){
+                        public void run(){
+                            com.run();
+                        }}).start();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void stop(){
+        this.ds.close();
+    }
+
     
 }

@@ -15,9 +15,9 @@ import java.net.DatagramPacket;
 public class MainServer {
     
     public static void main(String[] args) {
-        Server serv = new Server(125);
-        serv.initialise();
-        serv.run();
+        Server srv = new Server(3142);
+        srv.run();
+        srv.stop();
     }
     
 }
