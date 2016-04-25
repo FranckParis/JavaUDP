@@ -41,16 +41,17 @@ public class Client {
         String text;
         
         byte[] data = (new String("hello serveur RX302")).getBytes();
-        byte[] host = { (byte)134, (byte)214, (byte)117, (byte)127};
+        byte[] host = { (byte)134, (byte)214, (byte)117, (byte)127 };
         byte[] dataTemp = data;
         
         try {
-            //InetAddress ias = InetAddress.getByAddress(host);
-            InetAddress ias = InetAddress.getLocalHost();
-            this.dp = new DatagramPacket(data, data.length, ias, this.port);
+            //InetAddress adr = InetAddress.getByAddress(host);
+            InetAddress adr = InetAddress.getLocalHost();
+            this.dp = new DatagramPacket(data, data.length, adr, this.port);
             this.ds.send(dp);
+            
             data = new byte[data.length];
-            this.dp = new DatagramPacket(data, data.length, ias, this.port);
+            this.dp = new DatagramPacket(data, data.length, adr, this.port);
 
             this.ds.receive(this.dp);
 
@@ -69,11 +70,11 @@ public class Client {
                     data = text.getBytes();
                     dataTemp = data;
                     
-                    this.dp = new DatagramPacket(data, data.length, ias, this.port);
+                    this.dp = new DatagramPacket(data, data.length, adr, this.port);
                     this.ds.send(dp);
                     
                     data = new byte[data.length];
-                    this.dp = new DatagramPacket(data, data.length, ias, this.port);
+                    this.dp = new DatagramPacket(data, data.length, adr, this.port);
                     
                     this.ds.receive(this.dp);
 

@@ -44,7 +44,7 @@ public class Communication implements Runnable {
         } catch (IOException e) {
         }
         
-        data = new byte[data.length];
+        data = new byte[128];
         this.packet = new DatagramPacket(data, data.length, this.address, this.port);
 
         while(status){
@@ -61,7 +61,7 @@ public class Communication implements Runnable {
                 this.socket.send(this.packet);
 
                 if (new String(data, 0, 4).equals("stop")){
-                    System.out.println("Deconnection du client : " + this.address + ":" + this.port);
+                    System.out.println("Déconnexion du client : " + this.address + ":" + this.port);
                     this.status = false;
                 }
                 else System.out.println(new String(data));

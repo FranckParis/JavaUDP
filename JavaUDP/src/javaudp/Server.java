@@ -23,7 +23,7 @@ public class Server {
         try {
             this.ds = new DatagramSocket(port);
         } catch (SocketException ex) {
-            System.out.println("error");
+            System.out.println("Erreur lors de la création du socket");
         }
 
         this.dp = new DatagramPacket(new byte[128], 128);
@@ -39,6 +39,8 @@ public class Server {
         
         while(true) {
             try {
+                
+                //Reception
                 this.ds.receive(this.dp);
 
                 data = this.dp.getData();
@@ -62,6 +64,5 @@ public class Server {
     public void stop(){
         this.ds.close();
     }
-
-    
+  
 }
